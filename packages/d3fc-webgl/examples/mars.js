@@ -1,5 +1,5 @@
-const width = 500;
-const height = 250;
+const width = 1000;
+const height = 500;
 
 const webglAreaMin = fc
     .seriesWebglArea()

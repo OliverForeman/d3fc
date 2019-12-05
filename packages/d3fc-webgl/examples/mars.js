@@ -103,8 +103,6 @@ d3.json(
 
         const temperatureMulti = fc
             .seriesWebglMulti()
-            .xScale(xScale)
-            .yScale(temperatureYScale)
             .series([
                 temperatureAreaMin,
                 temperatureLineMin,
@@ -166,8 +164,6 @@ d3.json(
 
         const windSpeedMulti = fc
             .seriesWebglMulti()
-            .xScale(xScale)
-            .yScale(windSpeedYScale)
             .series([
                 windSpeedAreaMax,
                 windSpeedLineMax,
@@ -228,8 +224,6 @@ d3.json(
 
         const pressureMulti = fc
             .seriesWebglMulti()
-            .xScale(xScale)
-            .yScale(pressureYScale)
             .series([
                 pressureAreaMax,
                 pressureLineMax,

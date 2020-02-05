@@ -250,21 +250,16 @@ export const area = {
         }`,
     body: `vDefined = aDefined;
         gl_Position = vec4(0, 0, 0, 1);
-
         float hasIntercepted = when_lt((aYValue - aY0Value) * (aYPrevValue - aY0PrevValue), 0.0);
         float useIntercept = and(aCorner.z, hasIntercepted);
         
-        float yGradient = (aYValue - aYPrevValue) / (aXValue - aXPrevValue);
-        float yConstant = aYValue - (yGradient * aXValue);
-
-        float y0Gradient = (aY0Value - aY0PrevValue) / (aXValue - aXPrevValue);
-        float y0Constant = aY0Value - (y0Gradient * aXValue);
-
-        float denominator = (yGradient - y0Gradient) + step(abs(yGradient - y0Gradient), 0.0);
-        float interceptXValue = (y0Constant - yConstant) / denominator;
-        float interceptYValue = (yGradient * interceptXValue) + yConstant;
-
-        gl_Position = vec4(interceptXValue * useIntercept, interceptYValue * useIntercept, 0, 1);
+        float deltaX = aXValue - aXPrevValue;
+        float dataDeltaY = aYValue - aYPrevValue;
+        float baseDeltaY = aY0Value - aY0PrevValue;
+        float determinant = deltaX * (dataDeltaY - baseDeltaY);
+        
+        vec2 intercept = (1.0 / (determinant + step(abs(determinant), 0.0))) * mat2(-baseDeltaY, -deltaX, dataDeltaY, deltaX) * vec2((deltaX * aYPrevValue) - (dataDeltaY * aXPrevValue), (deltaX * aY0PrevValue) - (baseDeltaY * aXPrevValue));
+        gl_Position.yx = useIntercept * intercept;
         
         gl_Position.x += (1.0 - useIntercept) * ((aCorner.x * aXValue) + ((1.0 - aCorner.x) * aXPrevValue));
         gl_Position.y += (1.0 - useIntercept) * (1.0 - aCorner.y) * ((aCorner.x * aYValue) + ((1.0 - aCorner.x) * aYPrevValue));

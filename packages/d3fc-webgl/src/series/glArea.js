@@ -13,9 +13,11 @@ export default () => {
     let yScale = glScaleBase();
     let decorate = () => {};
 
-    const xValueAttribute = elementConstantAttributeBuilder().value(
-        (data, element) => data[Math.min(element + 1, data.length - 1)]
-    );
+    // const xValueAttribute = elementConstantAttributeBuilder().value(
+    //     (data, element) => data[Math.min(element + 1, data.length - 1)]
+    // );
+
+    let xValueAttribute = null;
 
     const xPreviousValueAttribute = elementConstantAttributeBuilder();
 
@@ -84,26 +86,26 @@ export default () => {
         program(numElements - 1);
     };
 
-    draw.xValues = data => {
-        xValueAttribute.data(data);
-        xPreviousValueAttribute.data(data);
+    draw.xValues = attributeBuilder => {
+        xValueAttribute = attributeBuilder;
+        // xPreviousValueAttribute.data(data);
         return draw;
     };
 
-    draw.yValues = data => {
-        yValueAttribute.data(data);
-        yPreviousValueAttribute.data(data);
+    draw.yValues = (data, value) => {
+        yValueAttribute.data(data).value(value);
+        yPreviousValueAttribute.data(data).value((_, i) => value(data[Math.max(i - 1, 0)], Math.max(i - 1, -1)));
         return draw;
     };
 
-    draw.y0Values = data => {
-        y0ValueAttribute.data(data);
-        y0PreviousValueAttribute.data(data);
+    draw.y0Values = (data, value) => {
+        y0ValueAttribute.data(data).value(value);
+        y0PreviousValueAttribute.data(data).value((_, i) => value(data[Math.max(i - 1, 0), Math.max(i - 1, -1)]));
         return draw;
     };
 
-    draw.defined = data => {
-        definedAttribute.data(data);
+    draw.defined = (data, value) => {
+        definedAttribute.data(data).value(value);
         return draw;
     };
 

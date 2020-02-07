@@ -1,6 +1,6 @@
 import xyBase from '../xyBase';
 import isIdentityScale from '../isIdentityScale';
-import { glArea, scaleMapper } from '@d3fc/d3fc-webgl';
+import { glArea, scaleMapper, elementConstantAttributeBuilder } from '@d3fc/d3fc-webgl';
 import { rebindAll, exclude, rebind } from '@d3fc/d3fc-rebind';
 
 export default () => {
@@ -30,10 +30,18 @@ export default () => {
                 defined[i] = base.defined()(d, i);
             });
 
-            draw.xValues(xValues)
-                .yValues(yValues)
-                .y0Values(y0Values)
-                .defined(defined);
+            const xAttribute = elementConstantAttributeBuilder()
+                .data(data)
+                .value((d, i) => xScale.scale(base.crossValue()(d, Math.min(i + 1, data.length - 1))));
+
+            draw.xValues(xAttribute)
+                .yValues(data, (d, i) => yScale.scale(base.mainValue()(d, Math.min(i + 1, data.length - 1))))
+                .y0Values(data, (d, i) => yScale.scale(base.baseValue()(d, Math.min(i + 1, data.length - 1))))
+                .defined(data, (d, i) => {
+                    const value = base.defined()(d, i);
+                    const nextValue = i === data.length - 1 ? 0 : base.defined()(d, i + 1);
+                    return value ? nextValue : value;
+                });
         }
 
         draw.xScale(xScale.glScale)

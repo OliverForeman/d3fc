@@ -15,24 +15,17 @@ export default () => {
         const requiredLength = offset + elementCount * componentCount;
         const projectedData = factory.type(base.type())(requiredLength);
 
-        if (componentCount > 1) {
-            for (let element = 0; element < elementCount; element++) {
-                const componentValues = value(data, element);
-                for (
-                    let component = 0;
-                    component < componentCount;
-                    component++
-                ) {
-                    projectedData[
-                        offset + element * componentCount + component
-                    ] = componentValues[component];
+        data.forEach((d, i) => {
+            const componentValues = value(d, i);
+            if (componentCount > 1) {
+                for (let component = 0; component < componentCount; component++) {
+                    projectedData[offset + i * componentCount + component] =
+                        componentValues[component];
                 }
+            } else {
+                projectedData[offset + i] = componentValues;
             }
-        } else {
-            for (let element = 0; element < elementCount; element++) {
-                projectedData[offset + element] = value(data, element);
-            }
-        }
+        });
 
         return projectedData;
     };

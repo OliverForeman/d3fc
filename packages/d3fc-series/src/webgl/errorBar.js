@@ -1,12 +1,28 @@
 import errorBarBase from '../errorBarBase';
 import isIdentityScale from '../isIdentityScale';
-import { glErrorBar, scaleMapper  } from '@d3fc/d3fc-webgl';
+import {
+    glErrorBar,
+    webglElementAttribute,
+    webglScaleMapper,
+    webglTypes
+} from '@d3fc/d3fc-webgl';
 import { rebindAll, exclude, rebind } from '@d3fc/d3fc-rebind';
 
 export default () => {
     const base = errorBarBase();
 
-    const draw = glErrorBar();
+    const crossValueAttribute = webglElementAttribute();
+    const highValueAttribute = webglElementAttribute();
+    const lowValueAttribute = webglElementAttribute();
+    const bandwidthAttribute = webglElementAttribute().type(webglTypes.UNSIGNED_SHORT);
+    const definedAttribute = webglElementAttribute().type(webglTypes.UNSIGNED_BYTE);
+
+    const draw = glErrorBar()
+        .crossValueAttribute(crossValueAttribute)
+        .highValueAttribute(highValueAttribute)
+        .lowValueAttribute(lowValueAttribute)
+        .bandwidthAttribute(bandwidthAttribute)
+        .definedAttribute(definedAttribute);
 
     let equals = (previousData, data) => false;
     let previousData = [];
@@ -16,31 +32,17 @@ export default () => {
             throw new Error(`Unsupported orientation ${base.orient()}`);
         }
 
-        const xScale = scaleMapper(base.xScale());
-        const yScale = scaleMapper(base.yScale());
+        const xScale = webglScaleMapper(base.xScale());
+        const yScale = webglScaleMapper(base.yScale());
 
         if (!isIdentityScale(xScale.scale) || !isIdentityScale(yScale.scale) || !equals(previousData, data)) {
             previousData = data;
 
-            const xValues = new Float32Array(data.length);
-            const high = new Float32Array(data.length);
-            const low = new Float32Array(data.length);
-            const bandwidth = new Float32Array(data.length);
-            const defined = new Float32Array(data.length);
-
-            data.forEach((d, i) => {
-                xValues[i] = xScale.scale(base.crossValue()(d, i));
-                high[i] = yScale.scale(base.highValue()(d, i));
-                low[i] = yScale.scale(base.lowValue()(d, i));
-                bandwidth[i] = base.bandwidth()(d, i);
-                defined[i] = base.defined()(d, i);
-            });
-
-            draw.xValues(xValues)
-                .highValues(high)
-                .lowValues(low)
-                .bandwidth(bandwidth)
-                .defined(defined);
+            crossValueAttribute.value((data, i) => xScale.scale(base.crossValue()(data[i], i))).data(data);
+            highValueAttribute.value((data, i) => yScale.scale(base.highValue()(data[i], i))).data(data);
+            lowValueAttribute.value((data, i) => yScale.scale(base.lowValue()(data[i], i))).data(data);
+            bandwidthAttribute.value((data, i) => base.bandwidth()(data[i], i)).data(data);
+            definedAttribute.value((data, i) => base.defined()(data[i], i)).data(data);
         }
 
         draw.xScale(xScale.glScale)
